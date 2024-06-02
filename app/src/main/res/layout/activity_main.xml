@@ -10,6 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
+        android:id="@+id/main"
         android:padding="16dp">
 
         <!-- Header Section -->
@@ -39,13 +40,12 @@
                 android:textStyle="bold"/>
         </LinearLayout>
 
-        <!-- Using ConstraintLayout for better control -->
+        <!-- Search Bar -->
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp">
 
-            <!-- Search Bar -->
             <EditText
                 android:id="@+id/search_bar"
                 android:layout_width="0dp"
@@ -61,13 +61,24 @@
 
         <!-- Dropdown List -->
         <Spinner
-            android:id="@+id/dropdown"
-            android:layout_width="wrap_content"
+            android:id="@+id/country_spinner"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:entries="@array/sort_options"
             android:padding="12dp"
             android:background="@drawable/dropdown_background"
             android:layout_marginTop="16dp"/>
+
+        <!-- Country Info TextView -->
+        <TextView
+            android:id="@+id/country_info_text_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            android:textSize="16sp"
+            android:padding="16dp"
+            android:background="#F0F0F0"
+            android:gravity="top|start"/>
     </LinearLayout>
 
 </ScrollView>

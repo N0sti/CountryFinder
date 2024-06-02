@@ -6,6 +6,7 @@
         <item>Superficie décroissante</item>
         <item>Population croissante</item>
         <item>Population décroissante</item>
-        <item>Favori</item>
+        <item>Alphabéthique</item>
+        <item>Favoris</item>
     </string-array>
 </resources>
