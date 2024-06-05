@@ -8,11 +8,13 @@ import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Spinner
-import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.android.volley.DefaultRetryPolicy
 import com.android.volley.Request
 import com.android.volley.Response
 import com.android.volley.toolbox.JsonArrayRequest
@@ -20,11 +22,15 @@ import com.android.volley.toolbox.Volley
 import org.json.JSONObject
 
 class MainActivity : AppCompatActivity() {
-    private lateinit var countrySpinner: Spinner
-    private lateinit var countryInfoTextView: TextView
+    private lateinit var countryRecyclerView: RecyclerView
+    private lateinit var sortSpinner: Spinner
+    private val countryList = ArrayList<JSONObject>()
+    private val favoriteCountries = mutableSetOf<String>()
+    private lateinit var adapter: CountryAdapter
 
     companion object {
         const val PERMISSION_INTERNET_CODE = 1001
+        const val TIMEOUT_MS = 180000 // 3 minutes in milliseconds
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -33,8 +39,33 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         // Initialize views
-        countrySpinner = findViewById(R.id.country_spinner)
-        countryInfoTextView = findViewById(R.id.country_info_text_view)
+        countryRecyclerView = findViewById(R.id.country_recycler_view)
+        sortSpinner = findViewById(R.id.sort_spinner)
+        countryRecyclerView.layoutManager = LinearLayoutManager(this)
+
+        // Initialize adapter
+        adapter = CountryAdapter(countryList, favoriteCountries)
+        countryRecyclerView.adapter = adapter
+
+        // Set up sort spinner
+        ArrayAdapter.createFromResource(
+            this,
+            R.array.sort_options,
+            android.R.layout.simple_spinner_item
+        ).also { arrayAdapter ->
+            arrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            sortSpinner.adapter = arrayAdapter
+        }
+
+        sortSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                sortCountries(position)
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) {
+                // Do nothing
+            }
+        }
 
         // Check if the permission is granted
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED) {
@@ -70,70 +101,44 @@ class MainActivity : AppCompatActivity() {
             Response.Listener { response ->
                 Log.d("MainActivity", "Received response: ${response.length()} countries")
                 // Parse JSON response
-                val countryList = ArrayList<String>()
-                val countryInfoMap = HashMap<String, JSONObject>()
+                countryList.clear()
                 for (i in 0 until response.length()) {
                     val countryObject = response.getJSONObject(i)
-                    val countryName = countryObject.getJSONObject("name").getString("common")
-                    countryList.add(countryName)
-                    countryInfoMap[countryName] = countryObject
+                    countryList.add(countryObject)
                 }
 
-                // Set up country spinner
-                val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, countryList)
-                adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-                countrySpinner.adapter = adapter
-
-                // Handle spinner item selection
-                countrySpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-                    override fun onItemSelected(
-                        adapterView: AdapterView<*>?,
-                        view: View?,
-                        position: Int,
-                        id: Long
-                    ) {
-                        val selectedCountryName = adapterView?.getItemAtPosition(position).toString()
-                        Log.d("MainActivity", "Selected country: $selectedCountryName")
-                        displayCountryInfo(countryInfoMap[selectedCountryName])
-                    }
-
-                    override fun onNothingSelected(p0: AdapterView<*>?) {
-                        Log.d("MainActivity", "No country selected")
-                    }
-                }
+                // Notify adapter of data change
+                adapter.notifyDataSetChanged()
+                sortCountries(sortSpinner.selectedItemPosition)
             },
             Response.ErrorListener { error ->
                 Log.e("MainActivity", "Error fetching country data", error)
             }
         )
 
+        // Set the retry policy to wait up to 3 minutes for a response
+        jsonArrayRequest.retryPolicy = DefaultRetryPolicy(
+            TIMEOUT_MS,
+            DefaultRetryPolicy.DEFAULT_MAX_RETRIES,
+            DefaultRetryPolicy.DEFAULT_BACKOFF_MULT
+        )
+
         queue.add(jsonArrayRequest)
     }
 
-    private fun displayCountryInfo(countryObject: JSONObject?) {
-        countryObject?.let {
-            val countryName = it.getJSONObject("name").optString("common", "N/A")
-            val capital = it.optJSONArray("capital")?.optString(0, "N/A") ?: "N/A"
-            val region = it.optString("region", "N/A")
-            val area = it.optDouble("area", 0.0).toString() + " km²"
-            val population = it.optInt("population", 0).toString()
-            val currency = it.optJSONObject("currencies")?.keys()?.asSequence()?.firstOrNull()
-            val currencyName = if (currency != null) it.optJSONObject("currencies")?.getJSONObject(currency)?.optString("name", "N/A") else "N/A"
-            val languages = it.optJSONObject("languages")?.let { languagesObj ->
-                languagesObj.keys().asSequence().map { key -> languagesObj.getString(key) }.joinToString(", ")
-            } ?: "N/A"
-
-            val countryInfo = "Fiche pays synthétique :\n" +
-                    "Nom : $countryName\n" +
-                    "Capitale : $capital\n" +
-                    "Région : $region\n" +
-                    "Superficie : $area\n" +
-                    "Population : $population\n" +
-                    "Devise : $currencyName\n" +
-                    "Langue : $languages"
-            countryInfoTextView.text = countryInfo
-
-            Log.d("MainActivity", "Displayed info for $countryName")
-        } ?: Log.e("MainActivity", "Country object is null")
+    private fun sortCountries(sortOption: Int) {
+        when (sortOption) {
+            0 -> countryList.sortBy { it.optDouble("area", 0.0) }
+            1 -> countryList.sortByDescending { it.optDouble("area", 0.0) }
+            2 -> countryList.sortBy { it.optInt("population", 0) }
+            3 -> countryList.sortByDescending { it.optInt("population", 0) }
+            4 -> countryList.sortBy { it.getJSONObject("name").optString("common", "N/A") }
+            5 -> {
+                val favoriteList = countryList.filter { favoriteCountries.contains(it.getJSONObject("name").optString("common", "")) }
+                countryList.clear()
+                countryList.addAll(favoriteList)
+            }
+        }
+        adapter.notifyDataSetChanged()
     }
 }
