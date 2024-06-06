@@ -3,6 +3,7 @@ package fr.epf.min1.findmycountry
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import org.json.JSONObject
@@ -15,6 +16,7 @@ class CountryAdapter(
     class CountryViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val countryName: TextView = view.findViewById(R.id.country_name)
         val countryInfo: TextView = view.findViewById(R.id.country_info)
+        val favoriteStar: ImageView = view.findViewById(R.id.favorite_star)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CountryViewHolder {
@@ -45,22 +47,19 @@ class CountryAdapter(
         holder.countryName.text = countryName
         holder.countryInfo.text = countryInfo
 
-        holder.itemView.setOnClickListener {
-            if (favoriteCountries.contains(countryName)) {
+        // Set favorite star icon
+        val isFavorite = favoriteCountries.contains(countryName)
+        holder.favoriteStar.setImageResource(if (isFavorite) R.drawable.ic_star_filled else R.drawable.ic_star_border)
+        holder.favoriteStar.setColorFilter(if (isFavorite) 0xFFFFD700.toInt() else 0xFFB0B0B0.toInt()) // Gold for favorite, gray otherwise
+
+        holder.favoriteStar.setOnClickListener {
+            if (isFavorite) {
                 favoriteCountries.remove(countryName)
             } else {
                 favoriteCountries.add(countryName)
             }
             notifyItemChanged(position)
         }
-
-        holder.itemView.setBackgroundColor(
-            if (favoriteCountries.contains(countryName)) {
-                0xFFD700 // Gold color for favorites
-            } else {
-                0xFFFFFF // White color for non-favorites
-            }.toInt()
-        )
     }
 
     override fun getItemCount(): Int {
