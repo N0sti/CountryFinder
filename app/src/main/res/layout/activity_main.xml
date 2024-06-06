@@ -48,10 +48,23 @@
             android:background="@drawable/search_bar_background"
             android:hint="Rechercher un pays"
             android:padding="12dp"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/search_button"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintWidth_percent="0.8" />
+
+        <ImageButton
+            android:id="@+id/search_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:src="@android:drawable/ic_menu_search"
+            android:contentDescription="@string/search_button_desc"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="@id/search_bar"
+            app:layout_constraintStart_toEndOf="@id/search_bar"
+            android:layout_marginStart="8dp" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <!-- Dropdown List -->

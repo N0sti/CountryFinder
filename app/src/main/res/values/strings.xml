@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">Country Finder</string>
     <string name="logo_desc">Logo de application</string>
+    <string name="search_button_desc">Rechercher un pays</string>
     <string-array name="sort_options">
         <item>Superficie croissante</item>
         <item>Superficie décroissante</item>

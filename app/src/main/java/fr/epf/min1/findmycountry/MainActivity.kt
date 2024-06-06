@@ -7,6 +7,8 @@ import android.util.Log
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import android.widget.EditText
+import android.widget.ImageButton
 import android.widget.Spinner
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -24,7 +26,10 @@ import org.json.JSONObject
 class MainActivity : AppCompatActivity() {
     private lateinit var countryRecyclerView: RecyclerView
     private lateinit var sortSpinner: Spinner
+    private lateinit var searchBar: EditText
+    private lateinit var searchButton: ImageButton
     private val countryList = ArrayList<JSONObject>()
+    private val filteredCountryList = ArrayList<JSONObject>()
     private val favoriteCountries = mutableSetOf<String>()
     private lateinit var adapter: CountryAdapter
 
@@ -41,10 +46,12 @@ class MainActivity : AppCompatActivity() {
         // Initialize views
         countryRecyclerView = findViewById(R.id.country_recycler_view)
         sortSpinner = findViewById(R.id.sort_spinner)
+        searchBar = findViewById(R.id.search_bar)
+        searchButton = findViewById(R.id.search_button)
         countryRecyclerView.layoutManager = LinearLayoutManager(this)
 
         // Initialize adapter
-        adapter = CountryAdapter(countryList, favoriteCountries)
+        adapter = CountryAdapter(filteredCountryList, favoriteCountries)
         countryRecyclerView.adapter = adapter
 
         // Set up sort spinner
@@ -65,6 +72,10 @@ class MainActivity : AppCompatActivity() {
             override fun onNothingSelected(parent: AdapterView<*>?) {
                 // Do nothing
             }
+        }
+
+        searchButton.setOnClickListener {
+            filterCountries(searchBar.text.toString())
         }
 
         // Check if the permission is granted
@@ -108,7 +119,7 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 // Notify adapter of data change
-                adapter.notifyDataSetChanged()
+                filterCountries(searchBar.text.toString())
                 sortCountries(sortSpinner.selectedItemPosition)
             },
             Response.ErrorListener { error ->
@@ -126,17 +137,31 @@ class MainActivity : AppCompatActivity() {
         queue.add(jsonArrayRequest)
     }
 
+    private fun filterCountries(query: String) {
+        filteredCountryList.clear()
+        if (query.isBlank()) {
+            filteredCountryList.addAll(countryList)
+        } else {
+            val lowerCaseQuery = query.lowercase()
+            filteredCountryList.addAll(countryList.filter {
+                it.getJSONObject("name").optString("common", "").lowercase().contains(lowerCaseQuery)
+            })
+        }
+        adapter.notifyDataSetChanged()
+        sortCountries(sortSpinner.selectedItemPosition)
+    }
+
     private fun sortCountries(sortOption: Int) {
         when (sortOption) {
-            0 -> countryList.sortBy { it.optDouble("area", 0.0) }
-            1 -> countryList.sortByDescending { it.optDouble("area", 0.0) }
-            2 -> countryList.sortBy { it.optInt("population", 0) }
-            3 -> countryList.sortByDescending { it.optInt("population", 0) }
-            4 -> countryList.sortBy { it.getJSONObject("name").optString("common", "N/A") }
+            0 -> filteredCountryList.sortBy { it.optDouble("area", 0.0) }
+            1 -> filteredCountryList.sortByDescending { it.optDouble("area", 0.0) }
+            2 -> filteredCountryList.sortBy { it.optInt("population", 0) }
+            3 -> filteredCountryList.sortByDescending { it.optInt("population", 0) }
+            4 -> filteredCountryList.sortBy { it.getJSONObject("name").optString("common", "N/A") }
             5 -> {
-                val favoriteList = countryList.filter { favoriteCountries.contains(it.getJSONObject("name").optString("common", "")) }
-                countryList.clear()
-                countryList.addAll(favoriteList)
+                val favoriteList = filteredCountryList.filter { favoriteCountries.contains(it.getJSONObject("name").optString("common", "")) }
+                filteredCountryList.clear()
+                filteredCountryList.addAll(favoriteList)
             }
         }
         adapter.notifyDataSetChanged()
