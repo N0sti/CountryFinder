@@ -1,5 +1,6 @@
 package fr.epf.min1.findmycountry
 
+import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -59,6 +60,14 @@ class CountryAdapter(
                 favoriteCountries.add(countryName)
             }
             notifyItemChanged(position)
+        }
+
+        holder.itemView.setOnClickListener {
+            val context = holder.itemView.context
+            val intent = Intent(context, CountryDetailActivity::class.java).apply {
+                putExtra("country_name", countryName)
+            }
+            context.startActivity(intent)
         }
     }
 

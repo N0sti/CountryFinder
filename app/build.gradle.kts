@@ -43,6 +43,7 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
     implementation(libs.volley)
     implementation("androidx.core:core:1.8.0")
+    implementation ("com.squareup.picasso:picasso:2.71828")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
