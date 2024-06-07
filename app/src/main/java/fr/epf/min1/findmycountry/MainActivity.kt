@@ -54,6 +54,10 @@ class MainActivity : AppCompatActivity() {
         adapter = CountryAdapter(filteredCountryList, favoriteCountries)
         countryRecyclerView.adapter = adapter
 
+        // Add spacing between items
+        val spacingInPixels = resources.getDimensionPixelSize(R.dimen.item_spacing)
+        countryRecyclerView.addItemDecoration(SpacingItemDecoration(spacingInPixels))
+
         // Set up sort spinner
         ArrayAdapter.createFromResource(
             this,

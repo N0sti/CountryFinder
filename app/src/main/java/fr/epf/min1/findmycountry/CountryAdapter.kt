@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import org.json.JSONObject
 
 class CountryAdapter(
@@ -15,6 +16,7 @@ class CountryAdapter(
 ) : RecyclerView.Adapter<CountryAdapter.CountryViewHolder>() {
 
     class CountryViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        val countryFlag: ImageView = view.findViewById(R.id.country_flag)
         val countryName: TextView = view.findViewById(R.id.country_name)
         val countryInfo: TextView = view.findViewById(R.id.country_info)
         val favoriteStar: ImageView = view.findViewById(R.id.favorite_star)
@@ -47,6 +49,12 @@ class CountryAdapter(
 
         holder.countryName.text = countryName
         holder.countryInfo.text = countryInfo
+
+        // Load flag image using Glide
+        val flagUrl = countryObject.optJSONObject("flags")?.optString("png", "")
+        Glide.with(holder.countryFlag.context)
+            .load(flagUrl)
+            .into(holder.countryFlag)
 
         // Set favorite star icon
         val isFavorite = favoriteCountries.contains(countryName)
