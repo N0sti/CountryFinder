@@ -1,0 +1,32 @@
+[
+  {
+    "name": "France",
+    "capital": "Paris",
+    "region": "Europe",
+    "population": 67012883,
+    "area": 551695,
+    "languages": ["French"],
+    "currencies": ["Euro"],
+    "flagUrl": "https://restcountries.com/data/fra.svg"
+  },
+  {
+    "name": "United States",
+    "capital": "Washington, D.C.",
+    "region": "Americas",
+    "population": 331449281,
+    "area": 9372610,
+    "languages": ["English"],
+    "currencies": ["United States Dollar"],
+    "flagUrl": "https://restcountries.com/data/usa.svg"
+  },
+  {
+    "name": "China",
+    "capital": "Beijing",
+    "region": "Asia",
+    "population": 1444216107,
+    "area": 9706961,
+    "languages": ["Chinese"],
+    "currencies": ["Renminbi"],
+    "flagUrl": "https://restcountries.com/data/chn.svg"
+  }
+]

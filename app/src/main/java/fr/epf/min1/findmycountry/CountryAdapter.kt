@@ -1,5 +1,7 @@
 package fr.epf.min1.findmycountry
 
+import CountryInfo
+import android.content.Context
 import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
@@ -7,12 +9,17 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.android.volley.Request
+import com.android.volley.Response
+import com.android.volley.toolbox.JsonArrayRequest
+import com.android.volley.toolbox.Volley
 import com.bumptech.glide.Glide
+import android.util.Log
 import org.json.JSONObject
-
 class CountryAdapter(
     private val countryList: List<JSONObject>,
-    private val favoriteCountries: MutableSet<String>
+    private val favoriteCountries: MutableSet<String>,
+    private val context: Context
 ) : RecyclerView.Adapter<CountryAdapter.CountryViewHolder>() {
 
     class CountryViewHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -32,20 +39,19 @@ class CountryAdapter(
         val countryName = countryObject.getJSONObject("name").optString("common", "N/A")
         val capital = countryObject.optJSONArray("capital")?.optString(0, "N/A") ?: "N/A"
         val region = countryObject.optString("region", "N/A")
-        val area = countryObject.optDouble("area", 0.0).toString() + " km²"
-        val population = countryObject.optInt("population", 0).toString()
-        val currency = countryObject.optJSONObject("currencies")?.keys()?.asSequence()?.firstOrNull()
-        val currencyName = if (currency != null) countryObject.optJSONObject("currencies")?.getJSONObject(currency)?.optString("name", "N/A") else "N/A"
+        val area = countryObject.optDouble("area", 0.0)
+        val population = countryObject.optInt("population", 0)
         val languages = countryObject.optJSONObject("languages")?.let { languagesObj ->
             languagesObj.keys().asSequence().map { key -> languagesObj.getString(key) }.joinToString(", ")
         } ?: "N/A"
+        val currencies = countryObject.optJSONObject("currencies")?.keys()?.asSequence()?.joinToString(", ") ?: "N/A"
 
-        val countryInfo = "Capitale : $capital\n" +
-                "Région : $region\n" +
-                "Superficie : $area\n" +
-                "Population : $population\n" +
-                "Devise : $currencyName\n" +
-                "Langue : $languages"
+        val countryInfo = "Capital: $capital\n" +
+                "Region: $region\n" +
+                "Area: $area\n" +
+                "Population: $population\n" +
+                "Languages: $languages\n" +
+                "Currencies: $currencies"
 
         holder.countryName.text = countryName
         holder.countryInfo.text = countryInfo
@@ -66,12 +72,13 @@ class CountryAdapter(
                 favoriteCountries.remove(countryName)
             } else {
                 favoriteCountries.add(countryName)
+                // Fetch and log country info when favorite star is clicked
+                fetchAndLogCountryInfo(countryName)
             }
-            notifyItemChanged(position)
+            notifyItemChanged(holder.adapterPosition)
         }
 
         holder.itemView.setOnClickListener {
-            val context = holder.itemView.context
             val intent = Intent(context, CountryDetailActivity::class.java).apply {
                 putExtra("country_name", countryName)
             }
@@ -81,5 +88,37 @@ class CountryAdapter(
 
     override fun getItemCount(): Int {
         return countryList.size
+    }
+
+    private fun fetchAndLogCountryInfo(countryName: String) {
+        val queue = Volley.newRequestQueue(context)
+        val url = "https://restcountries.com/v3.1/name/$countryName"
+
+        val jsonArrayRequest = JsonArrayRequest(
+            Request.Method.GET, url, null,
+            Response.Listener { response ->
+                if (response.length() > 0) {
+                    val countryObject = response.getJSONObject(0)
+                    val officialName = countryObject.getJSONObject("name").optString("official", "N/A")
+                    val capital = countryObject.optJSONArray("capital")?.optString(0, "N/A") ?: "N/A"
+                    val region = countryObject.optString("region", "N/A")
+                    val subregion = countryObject.optString("subregion", "N/A")
+                    val population = countryObject.optInt("population", 0)
+                    val area = countryObject.optDouble("area", 0.0)
+                    val languages = countryObject.optJSONObject("languages")?.let { languagesObj ->
+                        languagesObj.keys().asSequence().map { key -> languagesObj.getString(key) }.joinToString(", ")
+                    } ?: "N/A"
+                    val currencies = countryObject.optJSONObject("currencies")?.keys()?.asSequence()?.joinToString(", ") ?: "N/A"
+
+                    // Log the country info
+                    // You can log or handle the country info as needed
+                }
+            },
+            Response.ErrorListener { error ->
+                // Handle error
+            }
+        )
+
+        queue.add(jsonArrayRequest)
     }
 }

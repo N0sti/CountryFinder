@@ -54,7 +54,7 @@ class MainActivity : AppCompatActivity() {
         countryRecyclerView.layoutManager = LinearLayoutManager(this)
 
         // Initialize adapter
-        adapter = CountryAdapter(filteredCountryList, favoriteCountries)
+        adapter = CountryAdapter(filteredCountryList, favoriteCountries, this)
         countryRecyclerView.adapter = adapter
 
         // Add spacing between items
@@ -103,6 +103,7 @@ class MainActivity : AppCompatActivity() {
             // If the permission is already granted, fetch country data
             fetchCountryData()
         }
+
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
@@ -116,6 +117,12 @@ class MainActivity : AppCompatActivity() {
                 Log.e("MainActivity", "Internet permission denied")
             }
         }
+    }
+    private fun addToFavorites(countryName: String) {
+        favoriteCountries.add(countryName)
+        Log.d("MainActivity", "Pays ajouté aux favoris : $countryName")
+        // Assurez-vous de mettre à jour l'affichage après l'ajout du pays aux favoris
+        adapter.notifyDataSetChanged()
     }
 
     private fun fetchCountryData() {
@@ -182,10 +189,13 @@ class MainActivity : AppCompatActivity() {
                 filteredCountryList.addAll(favoriteList)
                 // Show "Show All" button if the list is filtered by favorites
                 showAllButton.visibility = View.VISIBLE
+
             }
         }
+
         adapter.notifyDataSetChanged()
     }
+    
 
     private fun showAllCountries() {
         // Clear the search bar

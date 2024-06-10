@@ -43,5 +43,6 @@
         android:contentDescription="@string/favorite_star_desc"
         android:tint="@android:color/darker_gray"
         android:clickable="true"
-        android:focusable="true" />
+        android:focusable="true"
+        android:onClick="addToFavoritesClicked" />
 </RelativeLayout>
