@@ -7,6 +7,7 @@ import android.util.Log
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.Spinner
@@ -28,6 +29,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var sortSpinner: Spinner
     private lateinit var searchBar: EditText
     private lateinit var searchButton: ImageButton
+    private lateinit var showAllButton: Button
     private val countryList = ArrayList<JSONObject>()
     private val filteredCountryList = ArrayList<JSONObject>()
     private val favoriteCountries = mutableSetOf<String>()
@@ -48,6 +50,7 @@ class MainActivity : AppCompatActivity() {
         sortSpinner = findViewById(R.id.sort_spinner)
         searchBar = findViewById(R.id.search_bar)
         searchButton = findViewById(R.id.search_button)
+        showAllButton = findViewById(R.id.show_all_button)
         countryRecyclerView.layoutManager = LinearLayoutManager(this)
 
         // Initialize adapter
@@ -71,6 +74,10 @@ class MainActivity : AppCompatActivity() {
         sortSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 sortCountries(position)
+                // Show "Show All" button if "Favorites" filter is selected
+                if (position == 5) {
+                    showAllButton.visibility = View.VISIBLE
+                }
             }
 
             override fun onNothingSelected(parent: AdapterView<*>?) {
@@ -80,6 +87,12 @@ class MainActivity : AppCompatActivity() {
 
         searchButton.setOnClickListener {
             filterCountries(searchBar.text.toString())
+        }
+
+        showAllButton.setOnClickListener {
+            showAllCountries()
+            // Hide "Show All" button
+            showAllButton.visibility = View.GONE
         }
 
         // Check if the permission is granted
@@ -148,7 +161,8 @@ class MainActivity : AppCompatActivity() {
         } else {
             val lowerCaseQuery = query.lowercase()
             filteredCountryList.addAll(countryList.filter {
-                it.getJSONObject("name").optString("common", "").lowercase().contains(lowerCaseQuery)
+                it.getJSONObject("name").optString("common", "").lowercase().contains(lowerCaseQuery) ||
+                        it.optJSONArray("capital")?.join(",")?.lowercase()?.contains(lowerCaseQuery) ?: false
             })
         }
         adapter.notifyDataSetChanged()
@@ -166,8 +180,25 @@ class MainActivity : AppCompatActivity() {
                 val favoriteList = filteredCountryList.filter { favoriteCountries.contains(it.getJSONObject("name").optString("common", "")) }
                 filteredCountryList.clear()
                 filteredCountryList.addAll(favoriteList)
+                // Show "Show All" button if the list is filtered by favorites
+                showAllButton.visibility = View.VISIBLE
             }
         }
         adapter.notifyDataSetChanged()
+    }
+
+    private fun showAllCountries() {
+        // Clear the search bar
+        searchBar.text.clear()
+
+        // Reset the filtered list to show all countries
+        filteredCountryList.clear()
+        filteredCountryList.addAll(countryList)
+
+        // Reset the sort spinner to the first option ("Superficie croissante")
+        sortSpinner.setSelection(0)
+
+        // Sort the countries by the default option ("Superficie croissante")
+        sortCountries(0)
     }
 }

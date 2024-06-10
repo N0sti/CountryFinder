@@ -2,5 +2,5 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="country_card_background">#fedbb8</color>
+    <color name="country_card_background">#ef938b</color>
 </resources>

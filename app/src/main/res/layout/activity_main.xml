@@ -9,31 +9,37 @@
     tools:context=".MainActivity">
 
     <!-- Header Section -->
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
         android:background="#FFD700"
-        android:padding="16dp"
-        android:gravity="center_vertical">
+        android:padding="16dp">
 
         <ImageView
             android:id="@+id/logo"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
             android:src="@drawable/logo"
             android:contentDescription="@string/logo_desc"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
             android:layout_marginEnd="16dp"/>
 
         <TextView
             android:id="@+id/app_name"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:text="Country Finder"
             android:textColor="#000000"
             android:textSize="24sp"
-            android:textStyle="bold"/>
-    </LinearLayout>
+            android:textStyle="bold"
+            android:gravity="center"
+            app:layout_constraintStart_toEndOf="@id/logo"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <!-- Search Bar -->
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -67,15 +73,37 @@
             android:layout_marginStart="8dp" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <!-- Dropdown List -->
-    <Spinner
-        android:id="@+id/sort_spinner"
+    <!-- Dropdown List and Show All Button -->
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:entries="@array/sort_options"
-        android:padding="12dp"
-        android:background="@drawable/dropdown_background"
-        android:layout_marginTop="16dp"/>
+        android:layout_marginTop="16dp">
+
+        <Spinner
+            android:id="@+id/sort_spinner"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:entries="@array/sort_options"
+            android:padding="12dp"
+            android:background="@drawable/dropdown_background"
+            app:layout_constraintEnd_toStartOf="@+id/show_all_button"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintWidth_percent="0.7" />
+
+        <Button
+            android:id="@+id/show_all_button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Réafficher tout"
+            android:layout_marginStart="8dp"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="@id/sort_spinner"
+            app:layout_constraintStart_toEndOf="@id/sort_spinner"
+            app:layout_constraintWidth_percent="0.3" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <!-- Country RecyclerView -->
     <androidx.recyclerview.widget.RecyclerView
